@@ -3,9 +3,5 @@ streamlit
 pandas
 numpy
 scikit-learn
-matplotlib
-fastapi
-uvicorn
-passlib
+plotly
 joblib
-tensorflow
