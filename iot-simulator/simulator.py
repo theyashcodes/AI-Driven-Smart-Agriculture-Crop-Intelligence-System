@@ -29,7 +29,7 @@ def simulate_sensor(field_id):
 try:
     print(f"Starting IoT Simulator matching broker {BROKER_URL}:{PORT}")
     while True:
-        # Simulate data for two distinct fields
+        # Simulate data for distinct fields by adding to this list (e.g. [1, 2, 3])
         for field_id in [1, 2]:
             data = simulate_sensor(field_id)
             client.publish(TOPIC, json.dumps(data))

@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "D:\AI-Driven-Smart-Agriculture-Crop-Intelligence-System\backend\venv\Lib\site-packages\motor\motor_asyncio.py", line 18, in <module>
+    from . import core, motor_gridfs
+  File "D:\AI-Driven-Smart-Agriculture-Crop-Intelligence-System\backend\venv\Lib\site-packages\motor\core.py", line 31, in <module>
+    from pymongo.cursor import _QUERY_OPTIONS, Cursor, RawBatchCursor
+ImportError: cannot import name '_QUERY_OPTIONS' from 'pymongo.cursor' (D:\AI-Driven-Smart-Agriculture-Crop-Intelligence-System\backend\venv\Lib\site-packages\pymongo\cursor.py)

@@ -1,0 +1,43 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.0.3, pluggy-1.6.0
+rootdir: D:\AI-Driven-Smart-Agriculture-Crop-Intelligence-System\backend
+plugins: anyio-3.7.1
+collected 0 items / 1 error
+
+=================================== ERRORS ====================================
+_____________________ ERROR collecting tests/test_api.py ______________________
+tests\test_api.py:3: in <module>
+    from main import app
+main.py:4: in <module>
+    from app.api import auth, farms, predictions, alerts
+app\api\auth.py:5: in <module>
+    from .. import models, schemas
+app\models.py:4: in <module>
+    from .database import Base
+app\database.py:7: in <module>
+    engine = create_engine(settings.DATABASE_URL)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<string>:2: in create_engine
+    ???
+venv\Lib\site-packages\sqlalchemy\util\deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\sqlalchemy\engine\create.py:548: in create_engine
+    u = _url.make_url(url)
+        ^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\sqlalchemy\engine\url.py:838: in make_url
+    return _parse_url(name_or_url)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+venv\Lib\site-packages\sqlalchemy\engine\url.py:904: in _parse_url
+    raise exc.ArgumentError(
+E   sqlalchemy.exc.ArgumentError: Could not parse SQLAlchemy URL from string ''
+============================== warnings summary ===============================
+venv\Lib\site-packages\pydantic\_internal\_config.py:219
+  D:\AI-Driven-Smart-Agriculture-Crop-Intelligence-System\backend\venv\Lib\site-packages\pydantic\_internal\_config.py:219: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.3/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR tests/test_api.py - sqlalchemy.exc.ArgumentError: Could not parse SQLAl...
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+========================= 1 warning, 1 error in 1.44s =========================

@@ -31,12 +31,22 @@ This repository follows an **Industry-Standard** microservice setup:
 - Node.js 18+
 - Python 3.10+
 
-### 1. Spin up the Infrastructure (Databases & MQTT Broker)
+### 1. Configure Environment Variables
+Create a `.env` file in the `backend/` directory:
+```env
+DATABASE_URL=postgresql://admin:admin123@localhost:5432/agri_db
+MONGO_URL=mongodb://admin:admin123@localhost:27017/
+JWT_SECRET=supersecretkey
+MQTT_BROKER_URL=localhost
+MQTT_PORT=1883
+```
+
+### 2. Spin up the Infrastructure (Databases & MQTT Broker)
 ```bash
 docker compose up -d postgres mongodb mosquitto
 ```
 
-### 2. Start the Backend API
+### 3. Start the Backend API
 ```bash
 cd backend
 python -m venv venv
@@ -45,6 +55,19 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 Swagger UI API Docs available at: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+### 4. Running Tests
+**Backend Tests:**
+```bash
+cd backend
+pytest tests/
+```
+**Frontend Tests:**
+```bash
+cd frontend
+npm test
+```
+
 
 ### 3. Generate ML Models & Run IoT Simulator
 ```bash

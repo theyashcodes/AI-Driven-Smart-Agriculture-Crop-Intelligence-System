@@ -56,7 +56,7 @@ X_train_y, X_test_y, y_train_y, y_test_y = train_test_split(X_yield, y_yield, te
 reg = RandomForestRegressor(n_estimators=100, random_state=42)
 reg.fit(X_train_y, y_train_y)
 y_pred_y = reg.predict(X_test_y)
-print(f"Yield Model RMSE: {mean_squared_error(y_test_y, y_pred_y, squared=False):.2f}")
+print(f"Yield Model RMSE: {np.sqrt(mean_squared_error(y_test_y, y_pred_y)):.2f}")
 joblib.dump(reg, 'artifacts/yield_model.pkl')
 
 print("\nModels successfully trained and saved to artifacts/ directory.")
