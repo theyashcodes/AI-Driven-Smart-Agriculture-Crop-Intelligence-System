@@ -26,6 +26,7 @@ export default function Dashboard() {
 
   const [currentFarm, setCurrentFarm] = useState({ name: "Loading...", location: "North" });
   const [yieldPrediction, setYieldPrediction] = useState("Loading...");
+  const [telemetryError, setTelemetryError] = useState<string | null>(null);
 
   useEffect(() => {
     const fn = async () => {
@@ -67,13 +68,19 @@ export default function Dashboard() {
                 const yieldData = await yieldRes.json();
                 setYieldPrediction(yieldData.predicted_yield);
               }
+              setTelemetryError(null); // Clear errors on success
+            } else {
+              setTelemetryError(`Failed to fetch sensor data: ${telRes.status} ${telRes.statusText}`);
             }
           }
         } else if (farmsRes.status === 401) {
           localStorage.removeItem("token");
           window.location.href = "/login";
+        } else {
+          setTelemetryError(`Farm fetch error: ${farmsRes.status}`);
         }
-      } catch (err) {
+      } catch (err: any) {
+        setTelemetryError(`Network communication error: ${err.message || 'Server unavailable'}`);
         console.error(err);
       }
     };
@@ -102,9 +109,21 @@ export default function Dashboard() {
           <Link href="/predictions" className="flex items-center space-x-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
             <span>ML Predictions</span>
           </Link>
+          <Link href="/pest-detection" className="flex items-center space-x-3 px-4 py-3 text-indigo-600 hover:bg-indigo-50 rounded-xl font-medium transition-colors">
+            <span>Pest & Disease CV</span>
+          </Link>
           <Link href="/settings" className="flex items-center space-x-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
             <span>Settings</span>
           </Link>
+          <div className="pt-6 mt-6 border-t border-gray-100">
+            <Link href="/pricing" className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-bold shadow-md hover:from-green-600 hover:to-green-700 transition-colors">
+               <span>Upgrade Plan</span>
+               <span className="bg-white text-green-700 text-xs px-2 py-0.5 rounded-full">PRO</span>
+            </Link>
+            <Link href="/admin" className="flex items-center space-x-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold transition-colors mt-3">
+               <span>Admin Panel</span>
+            </Link>
+          </div>
         </nav>
       </aside>
 
@@ -121,6 +140,12 @@ export default function Dashboard() {
         </header>
 
         {/* Top Stats Row */}
+        {telemetryError && (
+          <div className="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <strong className="font-bold">Error Fetching Data: </strong>
+            <span className="block sm:inline">{telemetryError}</span>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <SensorCard title="Temperature" value={sensors.temperature} unit="°C" icon={SunIcon} />
           <SensorCard title="Humidity" value={sensors.humidity} unit="%" icon={CloudIcon} />
