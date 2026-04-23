@@ -34,9 +34,9 @@ This repository follows an **Industry-Standard** microservice setup:
 ### 1. Configure Environment Variables
 Create a `.env` file in the `backend/` directory:
 ```env
-DATABASE_URL=postgresql://admin:admin123@localhost:5432/agri_db
-MONGO_URL=mongodb://admin:admin123@localhost:27017/
-JWT_SECRET=supersecretkey
+DATABASE_URL=postgresql://<db_user>:<db_password>@<db_host>:<db_port>/<db_name>
+MONGO_URL=mongodb://<mongo_user>:<mongo_password>@<mongo_host>:<mongo_port>/
+JWT_SECRET=<your_secure_random_key>
 MQTT_BROKER_URL=localhost
 MQTT_PORT=1883
 ```
