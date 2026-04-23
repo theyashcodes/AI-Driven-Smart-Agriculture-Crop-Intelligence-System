@@ -3,8 +3,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 os.environ["DATABASE_URL"] = "sqlite:///./test.db"
-os.environ["MONGO_URL"] = "mongodb://localhost:27017/"
-
+os.environ["MONGO_URL"] = "mongodb://<test_mongo_user>:<test_mongo_pass>@localhost:27017/"
+os.environ["JWT_SECRET"] = "testsecret"
 from main import app
 from app.database import Base, engine, SessionLocal
 from app.models import User
