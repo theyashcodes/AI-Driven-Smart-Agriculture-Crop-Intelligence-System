@@ -2,6 +2,9 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/solid";
+
+const TubesBackground = dynamic(() => import("@/components/TubesBackground"), { ssr: false });
 
 const NDVIMap = dynamic(() => import("../../components/NDVIMap"), { 
   ssr: false,
@@ -12,6 +15,7 @@ interface Farm {
   id: number;
   name: string;
   location: string;
+  created_at?: string;
 }
 
 export default function Farms() {
@@ -25,11 +29,22 @@ export default function Farms() {
 
   // Fetch farms from backend on mount
   const fetchFarms = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
     try {
-      const res = await fetch("http://localhost:8000/api/farms");
+      const res = await fetch("http://localhost:8000/api/farms", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
       if (res.ok) {
         const data = await res.json();
         setFarms(data);
+      } else if (res.status === 401) {
+        window.location.href = "/login";
       }
     } catch (err) {
       console.error("Failed to fetch farms", err);
@@ -46,11 +61,15 @@ export default function Farms() {
     const name = window.prompt("Enter Farm Name:", "My Custom Field");
     if (!name) return;
     const area = window.prompt("Enter Farm Location or Area:", "North Sector");
+    const token = localStorage.getItem("token");
     
     try {
       const res = await fetch("http://localhost:8000/api/farms", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({ name: name, location: area })
       });
       if (res.ok) {
@@ -65,34 +84,56 @@ export default function Farms() {
     }
   };
 
+  const downloadAuditReport = () => {
+    let csv = "Farm ID,Farm Name,Location,Created At\n";
+    farms.forEach(f => {
+      csv += `${f.id},"${f.name}","${f.location}",${f.created_at || 'N/A'}\n`;
+    });
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "agricultural-audit-report.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
-    <div className="flex bg-gray-50 min-h-screen">
+    <TubesBackground>
+      <div className="flex min-h-screen pointer-events-auto" style={{ position: 'relative', zIndex: 10 }}>
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 hidden md:block">
+      <aside className="w-64 bg-gray-900/70 backdrop-blur-xl border-r border-white/10 hidden md:block">
         <div className="p-6">
-          <h1 className="text-2xl font-black text-green-600 tracking-tight">Agri<span className="text-gray-800">Mind</span></h1>
-          <p className="text-xs text-gray-400 mt-1 uppercase font-semibold">Crop Intelligence</p>
+          <h1 className="text-2xl font-black text-green-400 tracking-tight">Agri<span className="text-white">Mind</span></h1>
+          <p className="text-xs text-gray-500 mt-1 uppercase font-semibold">Crop Intelligence</p>
         </div>
         <nav className="px-4 space-y-2 mt-4">
-          <Link href="/" className="flex items-center space-x-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+          <Link href="/" className="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:bg-white/5 rounded-xl font-medium transition-colors">
             <span>Dashboard</span>
           </Link>
-          <Link href="/farms" className="flex items-center space-x-3 px-4 py-3 bg-green-50 text-green-700 rounded-xl font-medium transition-colors">
+          <Link href="/farms" className="flex items-center space-x-3 px-4 py-3 bg-green-500/20 text-green-400 rounded-xl font-medium transition-colors">
             <span>My Farms</span>
           </Link>
-          <Link href="/predictions" className="flex items-center space-x-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+          <Link href="/predictions" className="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:bg-white/5 rounded-xl font-medium transition-colors">
             <span>ML Predictions</span>
           </Link>
-          <Link href="/settings" className="flex items-center space-x-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+          <Link href="/settings" className="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:bg-white/5 rounded-xl font-medium transition-colors">
             <span>Settings</span>
           </Link>
         </nav>
       </aside>
 
-      <main className="flex-1 p-8">
-        <header className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">My Farms</h2>
-          <p className="text-gray-500 mt-1">Manage your registered agricultural fields</p>
+      <main className="flex-1 p-8 max-w-6xl mx-auto">
+        <header className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-white">My Farms</h2>
+            <p className="text-gray-400 mt-1">Manage your agricultural zones and field data</p>
+          </div>
+          <button onClick={downloadAuditReport} className="flex items-center space-x-2 bg-gray-900/60 backdrop-blur-lg border border-white/10 hover:bg-gray-800/60 text-gray-300 px-5 py-2.5 rounded-xl font-semibold transition-colors shadow-sm">
+            <ArrowDownTrayIcon className="w-5 h-5 text-gray-400" />
+            <span>Export Audit CSV</span>
+          </button>
         </header>
 
         {loading ? (
@@ -100,12 +141,12 @@ export default function Farms() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {farms.map((farm: Farm) => (
-              <div key={farm.id} className={`col-span-1 ${activeMap === farm.id ? 'md:col-span-2' : ''} bg-white p-6 rounded-2xl shadow-sm border border-gray-100 transition-all duration-300`}>
+              <div key={farm.id} className={`col-span-1 ${activeMap === farm.id ? 'md:col-span-2' : ''} bg-gray-900/60 backdrop-blur-lg p-6 rounded-2xl shadow-sm border border-white/10 transition-all duration-300`}>
                  <div className="flex justify-between items-start">
                    <div>
-                     <h3 className="text-xl font-bold text-gray-800">{farm.name}</h3>
-                     <p className="text-gray-500 mt-1">Location: {farm.location || "N/A"}</p>
-                     <p className="text-xs font-mono text-gray-400 mt-2">ID: {farm.id}</p>
+                     <h3 className="text-xl font-bold text-white">{farm.name}</h3>
+                     <p className="text-gray-400 mt-1">Location: {farm.location || "N/A"}</p>
+                     <p className="text-xs font-mono text-gray-500 mt-2">ID: {farm.id}</p>
                    </div>
                    <button 
                      onClick={() => toggleMap(farm.id)}
@@ -132,12 +173,13 @@ export default function Farms() {
             ))}
             <div 
                onClick={handleAddFarm}
-               className="bg-white p-6 border-dashed rounded-2xl shadow-sm border-2 border-green-200 flex items-center justify-center cursor-pointer hover:bg-green-50 transition-colors">
-               <span className="text-green-600 font-bold text-lg">+ Add New Farm</span>
+               className="bg-gray-900/40 backdrop-blur-lg p-6 border-dashed rounded-2xl shadow-sm border-2 border-green-500/30 flex items-center justify-center cursor-pointer hover:bg-green-950/40 transition-colors">
+               <span className="text-green-400 font-bold text-lg">+ Add New Farm</span>
             </div>
           </div>
         )}
       </main>
-    </div>
+      </div>
+    </TubesBackground>
   );
 }
