@@ -31,9 +31,21 @@ function MapClickHandler({ onRegionSelect }: { onRegionSelect: (region: string) 
   return null;
 }
 
+const INDIA_BOUNDS: L.LatLngBoundsExpression = [
+  [6.5, 68.1], // South-West (approx)
+  [35.5, 97.4] // North-East (approx)
+];
+
 export default function InteractiveMap({ onRegionSelect }: { onRegionSelect: (region: string) => void }) {
   return (
-    <MapContainer center={[22.5937, 78.9629]} zoom={4} style={{ height: "100%", width: "100%", borderRadius: "0.75rem" }}>
+    <MapContainer 
+      center={[22.5937, 78.9629]} 
+      zoom={5} 
+      minZoom={4}
+      maxBounds={INDIA_BOUNDS}
+      maxBoundsViscosity={1.0}
+      style={{ height: "100%", width: "100%", borderRadius: "0.75rem" }}
+    >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
