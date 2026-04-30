@@ -1,10 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import SensorCard from "@/components/SensorCard";
 import PredictionChart from "@/components/PredictionChart";
 import AlertCard from "@/components/AlertCard";
 import { SunIcon, CloudIcon, BeakerIcon, ArrowTrendingUpIcon } from "@heroicons/react/24/solid";
+
+const TubesBackground = dynamic(() => import("@/components/TubesBackground"), { ssr: false });
 
 // Mock data to simulate API response before backend connects
 const mockChartData = [
@@ -45,7 +48,28 @@ export default function Dashboard() {
         const farmsRes = await fetch("http://localhost:8000/api/farms", { headers });
         if (farmsRes.ok) {
           const farms = await farmsRes.json();
-          const activeFarm = farms[farms.length - 1] || { id: 1, name: "Default Field", location: "North" };
+          const activeFarm = farms[farms.length - 1];
+          
+          if (!activeFarm) {
+            setCurrentFarm({ name: "Default Field", location: "North" } as any);
+            setTelemetryError(null);
+            const yieldRes = await fetch("http://localhost:8000/api/predictions/yield", {
+              method: "POST",
+              headers,
+              body: JSON.stringify({
+                temperature: 28.5,
+                humidity: 55,
+                soil_moisture: 28,
+                ph_level: 6.8
+              })
+            });
+            if (yieldRes.ok) {
+              const yieldData = await yieldRes.json();
+              setYieldPrediction(yieldData.predicted_yield);
+            }
+            return;
+          }
+          
           setCurrentFarm(activeFarm);
           
           if (activeFarm.id) {
@@ -92,35 +116,36 @@ export default function Dashboard() {
 
 
   return (
-    <div className="flex bg-gray-50 min-h-screen">
+    <TubesBackground enableClickInteraction={true}>
+      <div className="flex min-h-screen pointer-events-auto" style={{ position: 'relative', zIndex: 10 }}>
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 hidden md:block">
+      <aside className="w-64 bg-gray-900/70 backdrop-blur-xl border-r border-white/10 hidden md:block">
         <div className="p-6">
-          <h1 className="text-2xl font-black text-green-600 tracking-tight">Agri<span className="text-gray-800">Mind</span></h1>
-          <p className="text-xs text-gray-400 mt-1 uppercase font-semibold">Crop Intelligence</p>
+          <h1 className="text-2xl font-black text-green-400 tracking-tight">Agri<span className="text-white">Mind</span></h1>
+          <p className="text-xs text-gray-500 mt-1 uppercase font-semibold">Crop Intelligence</p>
         </div>
         <nav className="px-4 space-y-2 mt-4">
-          <Link href="/" className="flex items-center space-x-3 px-4 py-3 bg-green-50 text-green-700 rounded-xl font-medium">
+          <Link href="/" className="flex items-center space-x-3 px-4 py-3 bg-green-500/20 text-green-400 rounded-xl font-medium">
             <span>Dashboard</span>
           </Link>
-          <Link href="/farms" className="flex items-center space-x-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+          <Link href="/farms" className="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:bg-white/5 rounded-xl font-medium transition-colors">
             <span>My Farms</span>
           </Link>
-          <Link href="/predictions" className="flex items-center space-x-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+          <Link href="/predictions" className="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:bg-white/5 rounded-xl font-medium transition-colors">
             <span>ML Predictions</span>
           </Link>
-          <Link href="/pest-detection" className="flex items-center space-x-3 px-4 py-3 text-indigo-600 hover:bg-indigo-50 rounded-xl font-medium transition-colors">
+          <Link href="/pest-detection" className="flex items-center space-x-3 px-4 py-3 text-indigo-400 hover:bg-indigo-500/10 rounded-xl font-medium transition-colors">
             <span>Pest & Disease CV</span>
           </Link>
-          <Link href="/settings" className="flex items-center space-x-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+          <Link href="/settings" className="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:bg-white/5 rounded-xl font-medium transition-colors">
             <span>Settings</span>
           </Link>
-          <div className="pt-6 mt-6 border-t border-gray-100">
-            <Link href="/pricing" className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-bold shadow-md hover:from-green-600 hover:to-green-700 transition-colors">
+          <div className="pt-6 mt-6 border-t border-white/10">
+            <Link href="/pricing" className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-bold shadow-md hover:from-green-500 hover:to-green-600 transition-colors">
                <span>Upgrade Plan</span>
                <span className="bg-white text-green-700 text-xs px-2 py-0.5 rounded-full">PRO</span>
             </Link>
-            <Link href="/admin" className="flex items-center space-x-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold transition-colors mt-3">
+            <Link href="/admin" className="flex items-center space-x-3 px-4 py-3 bg-indigo-500/10 text-indigo-400 rounded-xl font-bold transition-colors mt-3">
                <span>Admin Panel</span>
             </Link>
           </div>
@@ -131,17 +156,17 @@ export default function Dashboard() {
       <main className="flex-1 p-8">
         <header className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-gray-800">Farm Overview</h2>
-            <p className="text-gray-500 mt-1">Real-time monitoring and AI insights for {currentFarm.name}</p>
+            <h2 className="text-3xl font-bold text-white">Farm Overview</h2>
+            <p className="text-gray-400 mt-1">Real-time monitoring and AI insights for {currentFarm.name}</p>
           </div>
-          <button onClick={() => window.print()} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-semibold transition-colors shadow-lg shadow-green-200">
+          <button onClick={() => window.print()} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-semibold transition-colors shadow-lg shadow-green-900/30">
             Generate Report
           </button>
         </header>
 
         {/* Top Stats Row */}
         {telemetryError && (
-          <div className="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+          <div className="mb-6 bg-red-950/60 border border-red-500/30 text-red-300 px-4 py-3 rounded-xl backdrop-blur-lg relative">
             <strong className="font-bold">Error Fetching Data: </strong>
             <span className="block sm:inline">{telemetryError}</span>
           </div>
@@ -159,8 +184,8 @@ export default function Dashboard() {
             <PredictionChart data={mockChartData} />
           </div>
           
-          <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-            <h3 className="text-xl font-bold text-gray-800 mb-6">AI Recommendations</h3>
+          <div className="bg-gray-900/60 backdrop-blur-xl p-6 rounded-2xl shadow-lg border border-white/10">
+            <h3 className="text-xl font-bold text-white mb-6">AI Recommendations</h3>
             
             <div className="space-y-4">
               {sensors.moisture < 30 && (
@@ -175,17 +200,18 @@ export default function Dashboard() {
                 message="Expected temperature spike tomorrow (36°C). Disease risk increased by 15%." 
                 time="2 hours ago" 
               />
-              <div className="p-4 rounded-xl border border-green-200 bg-green-50 flex flex-col items-center justify-center text-center mt-6">
-                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
-                   <ArrowTrendingUpIcon className="w-6 h-6 text-green-600" />
+              <div className="p-4 rounded-xl border border-green-500/30 bg-green-950/40 flex flex-col items-center justify-center text-center mt-6">
+                 <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mb-3">
+                   <ArrowTrendingUpIcon className="w-6 h-6 text-green-400" />
                  </div>
-                 <h4 className="font-semibold text-green-800">Crop Health is Excellent</h4>
-                 <p className="text-sm text-green-600 mt-1">NDVI analysis shows normal growth patterns.</p>
+                 <h4 className="font-semibold text-green-300">Crop Health is Excellent</h4>
+                 <p className="text-sm text-green-400/70 mt-1">NDVI analysis shows normal growth patterns.</p>
               </div>
             </div>
           </div>
         </div>
       </main>
-    </div>
+      </div>
+    </TubesBackground>
   );
 }
