@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ArrowUpTrayIcon, DocumentMagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import API_BASE_URL from "@/lib/api";
 
 const TubesBackground = dynamic(() => import("@/components/TubesBackground"), { ssr: false });
 
@@ -30,7 +31,7 @@ export default function PestDetection() {
     // Using dummy image logic if backend not responsive, else call API
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8000/api/predictions/pest-detect", {
+      const res = await fetch(`${API_BASE_URL}/api/predictions/pest-detect`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData

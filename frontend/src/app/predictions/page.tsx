@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import API_BASE_URL from "@/lib/api";
 
 const TubesBackground = dynamic(() => import("@/components/TubesBackground"), { ssr: false });
 
@@ -20,7 +21,7 @@ export default function Predictions() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8000/api/predictions/region-crop", {
+      const res = await fetch(`${API_BASE_URL}/api/predictions/region-crop`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

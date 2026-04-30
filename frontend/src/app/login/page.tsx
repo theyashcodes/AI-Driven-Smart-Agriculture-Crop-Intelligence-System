@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import API_BASE_URL from "@/lib/api";
 
 const TubesBackground = dynamic(() => import("@/components/TubesBackground"), { ssr: false });
 
@@ -19,7 +20,7 @@ export default function Login() {
     formData.append("password", password);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData,

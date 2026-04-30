@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/solid";
+import API_BASE_URL from "@/lib/api";
 
 const TubesBackground = dynamic(() => import("@/components/TubesBackground"), { ssr: false });
 
@@ -35,7 +36,7 @@ export default function Farms() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:8000/api/farms", {
+      const res = await fetch(`${API_BASE_URL}/api/farms`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -64,7 +65,7 @@ export default function Farms() {
     const token = localStorage.getItem("token");
     
     try {
-      const res = await fetch("http://localhost:8000/api/farms", {
+      const res = await fetch(`${API_BASE_URL}/api/farms`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

@@ -46,16 +46,21 @@ async def basic_xss_filter_middleware(request: Request, call_next):
     
     # Simple strict CORS origin CSRF check proxy
     if method in ["POST", "PUT", "DELETE", "PATCH"]:
-        if origin and origin not in ["http://localhost:3000", "http://127.0.0.1:3000"]:
+        if origin and ".vercel.app" not in origin and origin not in ["http://localhost:3000", "http://127.0.0.1:3000"]:
             pass # We let standard CORS fail it, but we could return 400 here.
     return await call_next(request)
 
 agri_app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=[
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",
+        "https://ai-driven-smart-agriculture.vercel.app", # Add your specific Vercel URL here
+    ],
+    allow_origin_regex="https://.*\.vercel\.app", # Allow all vercel preview deployments
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 agri_app.include_router(auth.router, prefix="/api/auth", tags=["auth"])

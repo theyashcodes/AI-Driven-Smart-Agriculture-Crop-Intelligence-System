@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import PaymentModal from "@/components/PaymentModal";
+import API_BASE_URL from "@/lib/api";
 
 const TubesBackground = dynamic(() => import("@/components/TubesBackground"), { ssr: false });
 
@@ -30,7 +31,7 @@ export default function Pricing() {
     setLoading(true);
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch("http://localhost:8000/api/billing/upgrade", {
+      const res = await fetch(`${API_BASE_URL}/api/billing/upgrade`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

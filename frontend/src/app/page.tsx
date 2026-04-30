@@ -6,6 +6,7 @@ import SensorCard from "@/components/SensorCard";
 import PredictionChart from "@/components/PredictionChart";
 import AlertCard from "@/components/AlertCard";
 import { SunIcon, CloudIcon, BeakerIcon, ArrowTrendingUpIcon } from "@heroicons/react/24/solid";
+import API_BASE_URL from "@/lib/api";
 
 const TubesBackground = dynamic(() => import("@/components/TubesBackground"), { ssr: false });
 
@@ -45,7 +46,7 @@ export default function Dashboard() {
           "Authorization": `Bearer ${token}`
         };
 
-        const farmsRes = await fetch("http://localhost:8000/api/farms", { headers });
+        const farmsRes = await fetch(`${API_BASE_URL}/api/farms`, { headers });
         if (farmsRes.ok) {
           const farms = await farmsRes.json();
           const activeFarm = farms[farms.length - 1];
@@ -53,7 +54,7 @@ export default function Dashboard() {
           if (!activeFarm) {
             setCurrentFarm({ name: "Default Field", location: "North" } as any);
             setTelemetryError(null);
-            const yieldRes = await fetch("http://localhost:8000/api/predictions/yield", {
+            const yieldRes = await fetch(`${API_BASE_URL}/api/predictions/yield`, {
               method: "POST",
               headers,
               body: JSON.stringify({
@@ -73,12 +74,12 @@ export default function Dashboard() {
           setCurrentFarm(activeFarm);
           
           if (activeFarm.id) {
-            const telRes = await fetch(`http://localhost:8000/api/farms/${activeFarm.id}/telemetry`, { headers });
+            const telRes = await fetch(`${API_BASE_URL}/api/farms/${activeFarm.id}/telemetry`, { headers });
             if (telRes.ok) {
               const telData = await telRes.json();
               setSensors(telData);
 
-              const yieldRes = await fetch("http://localhost:8000/api/predictions/yield", {
+              const yieldRes = await fetch(`${API_BASE_URL}/api/predictions/yield`, {
                 method: "POST",
                 headers,
                 body: JSON.stringify({

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import API_BASE_URL from "@/lib/api";
 
 const TubesBackground = dynamic(() => import("@/components/TubesBackground"), { ssr: false });
 
@@ -27,7 +28,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/api/auth/users", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/users`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -54,7 +55,7 @@ export default function AdminDashboard() {
   const handleApprove = async (userId: number) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`http://localhost:8000/api/auth/users/${userId}/approve`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/users/${userId}/approve`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`

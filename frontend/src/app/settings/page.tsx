@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import API_BASE_URL from "@/lib/api";
 
 const TubesBackground = dynamic(() => import("@/components/TubesBackground"), { ssr: false });
 
@@ -12,7 +13,7 @@ export default function Settings() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/alerts/settings", {
+    fetch(`${API_BASE_URL}/api/alerts/settings`, {
       headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
     })
       .then(res => res.json())
@@ -26,7 +27,7 @@ export default function Settings() {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/alerts/settings", {
+      const res = await fetch(`${API_BASE_URL}/api/alerts/settings`, {
          method: "POST",
          headers: { 
            "Content-Type": "application/json",
@@ -60,7 +61,7 @@ export default function Settings() {
     setLoading(true);
     const randomMessage = testMessages[Math.floor(Math.random() * testMessages.length)];
     try {
-      const res = await fetch("http://localhost:8000/api/alerts/send-telegram", {
+      const res = await fetch(`${API_BASE_URL}/api/alerts/send-telegram`, {
          method: "POST",
          headers: { 
            "Content-Type": "application/json",
