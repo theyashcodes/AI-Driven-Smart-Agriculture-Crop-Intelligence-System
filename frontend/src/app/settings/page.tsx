@@ -1,19 +1,24 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+
+const TubesBackground = dynamic(() => import("@/components/TubesBackground"), { ssr: false });
 
 export default function Settings() {
-  const [phone, setPhone] = useState("");
-  const [smsEnabled, setSmsEnabled] = useState(false);
+  const [chatId, setChatId] = useState("");
+  const [telegramEnabled, setTelegramEnabled] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/alerts/settings")
+    fetch("http://localhost:8000/api/alerts/settings", {
+      headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+    })
       .then(res => res.json())
       .then(data => {
-         setPhone(data.phone || "");
-         setSmsEnabled(data.sms_enabled || false);
+         setChatId(data.chat_id || "");
+         setTelegramEnabled(data.telegram_enabled || false);
       })
       .catch(err => console.error(err));
   }, []);
@@ -23,8 +28,11 @@ export default function Settings() {
     try {
       const res = await fetch("http://localhost:8000/api/alerts/settings", {
          method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ phone, sms_enabled: smsEnabled })
+         headers: { 
+           "Content-Type": "application/json",
+           "Authorization": `Bearer ${localStorage.getItem("token")}`
+         },
+         body: JSON.stringify({ chat_id: chatId, telegram_enabled: telegramEnabled })
       });
       if (res.ok) setMessage("Settings saved successfully!");
     } catch (e) {
@@ -36,30 +44,42 @@ export default function Settings() {
     }
   };
 
-  const handleTestSMS = async () => {
-    if (!phone) {
-      setMessage("Please enter a phone number first.");
+  const testMessages = [
+    "🚨 CRITICAL: Soil moisture dropping rapidly in North Sector!",
+    "⚠️ WARNING: High temperature detected in South Greenhouse.",
+    "ℹ️ INFO: Irrigation system cycle completed successfully.",
+    "🐛 ALERT: Possible pest activity detected in East Field.",
+    "💧 UPDATE: Rain expected in 2 hours. Pausing scheduled irrigation."
+  ];
+
+  const handleTestTelegram = async () => {
+    if (!chatId) {
+      setMessage("Please enter a Telegram Chat ID first.");
       return;
     }
     setLoading(true);
+    const randomMessage = testMessages[Math.floor(Math.random() * testMessages.length)];
     try {
-      const res = await fetch("http://localhost:8000/api/alerts/send-sms", {
+      const res = await fetch("http://localhost:8000/api/alerts/send-telegram", {
          method: "POST",
-         headers: { "Content-Type": "application/json" },
+         headers: { 
+           "Content-Type": "application/json",
+           "Authorization": `Bearer ${localStorage.getItem("token")}`
+         },
          body: JSON.stringify({ 
-           phone: phone, 
-           message: "CRITICAL: Soil moisture dropping in North Sector!" 
+           chat_id: chatId, 
+           message: randomMessage 
          })
       });
       const data = await res.json();
       if (res.ok) {
-         setMessage("Test SMS initiated! Check Python backend logs.");
+         setMessage("Test Telegram initiated! Check Python backend logs.");
       } else {
-         setMessage(data.detail || "Error triggering SMS");
+         setMessage(data.detail || "Error triggering Telegram alert");
       }
     } catch (e) {
       console.error(e);
-      setMessage("Network error triggering SMS.");
+      setMessage("Network error triggering Telegram alert.");
     } finally {
       setLoading(false);
       setTimeout(() => setMessage(""), 5000);
@@ -67,24 +87,25 @@ export default function Settings() {
   };
 
   return (
-    <div className="flex bg-gray-50 min-h-screen">
+    <TubesBackground>
+      <div className="flex min-h-screen pointer-events-auto" style={{ position: 'relative', zIndex: 10 }}>
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 hidden md:block">
+      <aside className="w-64 bg-gray-900/70 backdrop-blur-xl border-r border-white/10 hidden md:block">
         <div className="p-6">
-          <h1 className="text-2xl font-black text-green-600 tracking-tight">Agri<span className="text-gray-800">Mind</span></h1>
-          <p className="text-xs text-gray-400 mt-1 uppercase font-semibold">Crop Intelligence</p>
+          <h1 className="text-2xl font-black text-green-400 tracking-tight">Agri<span className="text-white">Mind</span></h1>
+          <p className="text-xs text-gray-500 mt-1 uppercase font-semibold">Crop Intelligence</p>
         </div>
         <nav className="px-4 space-y-2 mt-4">
-          <Link href="/" className="flex items-center space-x-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+          <Link href="/" className="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:bg-white/5 rounded-xl font-medium transition-colors">
             <span>Dashboard</span>
           </Link>
-          <Link href="/farms" className="flex items-center space-x-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+          <Link href="/farms" className="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:bg-white/5 rounded-xl font-medium transition-colors">
             <span>My Farms</span>
           </Link>
-          <Link href="/predictions" className="flex items-center space-x-3 px-4 py-3 text-gray-500 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+          <Link href="/predictions" className="flex items-center space-x-3 px-4 py-3 text-gray-400 hover:bg-white/5 rounded-xl font-medium transition-colors">
             <span>ML Predictions</span>
           </Link>
-          <Link href="/settings" className="flex items-center space-x-3 px-4 py-3 bg-green-50 text-green-700 rounded-xl font-medium">
+          <Link href="/settings" className="flex items-center space-x-3 px-4 py-3 bg-green-500/20 text-green-400 rounded-xl font-medium">
             <span>Settings</span>
           </Link>
         </nav>
@@ -92,44 +113,44 @@ export default function Settings() {
 
       <main className="flex-1 p-8">
         <header className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">Settings</h2>
-          <p className="text-gray-500 mt-1">Manage your account and notification preferences</p>
+          <h2 className="text-3xl font-bold text-white">Settings</h2>
+          <p className="text-gray-400 mt-1">Manage your account and notification preferences</p>
         </header>
 
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-2xl">
-          <h3 className="text-xl font-bold text-gray-800 mb-6">Mobile SMS Notifications</h3>
+        <div className="bg-gray-900/60 backdrop-blur-xl p-8 rounded-2xl shadow-sm border border-white/10 max-w-2xl">
+          <h3 className="text-xl font-bold text-white mb-6">Telegram Notifications</h3>
           <div className="space-y-6">
             <div>
-               <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+               <label className="block text-sm font-medium text-gray-400 mb-2">Telegram Chat ID</label>
                <input 
-                 type="tel" 
-                 value={phone}
-                 onChange={(e) => setPhone(e.target.value)}
-                 className="w-full border border-gray-300 rounded-lg px-4 py-3" 
-                 placeholder="+1 (555) 000-0000" 
+                 type="text" 
+                 value={chatId}
+                 onChange={(e) => setChatId(e.target.value)}
+                 className="w-full border border-white/10 rounded-lg px-4 py-3 bg-gray-800/60 text-white placeholder-gray-500" 
+                 placeholder="123456789" 
                />
-               <p className="text-xs text-gray-400 mt-2">Required for critical system alerts (e.g. frost warnings).</p>
+               <p className="text-xs text-gray-500 mt-2">Required for critical system alerts. You can find this by messaging @userinfobot on Telegram.</p>
             </div>
             
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+            <div className="flex items-center justify-between p-4 bg-gray-800/40 rounded-xl border border-white/10">
                <div>
-                  <label className="font-semibold text-gray-800">Enable SMS Alerts</label>
-                  <p className="text-sm text-gray-500">Receive text messages for priority events</p>
+                  <label className="font-semibold text-white">Enable Telegram Alerts</label>
+                  <p className="text-sm text-gray-400">Receive Telegram messages for priority events</p>
                </div>
                <label className="relative inline-flex items-center cursor-pointer">
                  <input 
                    type="checkbox" 
                    className="sr-only peer" 
-                   checked={smsEnabled}
-                   onChange={(e) => setSmsEnabled(e.target.checked)}
+                   checked={telegramEnabled}
+                   onChange={(e) => setTelegramEnabled(e.target.checked)}
                  />
-                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                 <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
                </label>
             </div>
             
-            {message && <p className="text-sm font-semibold text-blue-600 bg-blue-50 p-3 rounded-lg">{message}</p>}
+            {message && <p className="text-sm font-semibold text-green-400 bg-green-950/40 p-3 rounded-lg border border-green-500/30">{message}</p>}
             
-            <div className="flex space-x-4 pt-4 border-t border-gray-100">
+            <div className="flex space-x-4 pt-4 border-t border-white/10">
                <button 
                  onClick={handleSave} 
                  disabled={loading}
@@ -138,16 +159,17 @@ export default function Settings() {
                  Save Preferences
                </button>
                <button 
-                 onClick={handleTestSMS}
-                 disabled={loading || !smsEnabled}
-                 className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-6 py-2.5 rounded-xl font-semibold transition-colors disabled:opacity-50"
+                 onClick={handleTestTelegram}
+                 disabled={loading || !telegramEnabled}
+                 className="bg-gray-800/60 hover:bg-gray-700/60 text-gray-300 border border-white/10 px-6 py-2.5 rounded-xl font-semibold transition-colors disabled:opacity-50"
                >
-                 Test SMS Alert
+                 Test Telegram Alert
                </button>
             </div>
           </div>
         </div>
       </main>
-    </div>
+      </div>
+    </TubesBackground>
   );
 }
