@@ -12,6 +12,8 @@ class UserResponse(BaseModel):
     username: str
     email: EmailStr
     role: str
+    is_approved: bool
+    subscription_tier: str
 
     class Config:
         from_attributes = True

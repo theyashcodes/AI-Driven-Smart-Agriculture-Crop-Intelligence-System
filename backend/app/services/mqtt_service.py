@@ -4,21 +4,28 @@ from datetime import datetime
 import asyncio
 from ..database import sensor_collection
 from ..core.config import settings
+from ..api.websockets import manager
 
 def on_connect(client, userdata, flags, rc):
     print(f"Connected to MQTT Broker with result code {rc}")
     client.subscribe("farm/sensors")
+
+main_loop = None
+
+async def insert_sensor_data(payload):
+    # Broadcast before insertion to avoid _id serialization issues
+    if 'field_id' in payload:
+        await manager.broadcast_to_farm(payload['field_id'], payload)
+    await sensor_collection.insert_one(payload)
 
 def on_message(client, userdata, msg):
     try:
         payload = json.loads(msg.payload.decode())
         payload['timestamp'] = datetime.utcnow()
         
-        # Async calls from sync context need to be handled or we use PyMongo for simplicity in the listener thread
-        # Or use motor with asyncio.create_task if we have a running event loop
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            loop.create_task(sensor_collection.insert_one(payload))
+        global main_loop
+        if main_loop and main_loop.is_running():
+            asyncio.run_coroutine_threadsafe(insert_sensor_data(payload), main_loop)
             
     except Exception as e:
         print(f"Error processing MQTT message: {e}")
@@ -31,6 +38,8 @@ def get_mqtt_client():
 
 def start_mqtt():
     try:
+        global main_loop
+        main_loop = asyncio.get_running_loop()
         client = get_mqtt_client()
         client.connect(settings.MQTT_BROKER_URL, settings.MQTT_PORT, 60)
         client.loop_start()  # Runs in a background thread

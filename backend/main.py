@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api import auth, farms, predictions, alerts, billing, weather
+from app.api import auth, farms, predictions, alerts, billing, weather, location, websockets
 from app.services.mqtt_service import start_mqtt
 from app.database import engine, Base
 import asyncio
@@ -64,6 +64,8 @@ agri_app.include_router(predictions.router, prefix="/api/predictions", tags=["pr
 agri_app.include_router(alerts.router, prefix="/api/alerts", tags=["alerts"])
 agri_app.include_router(billing.router, prefix="/api/billing", tags=["billing"])
 agri_app.include_router(weather.router, prefix="/api/weather", tags=["weather"])
+agri_app.include_router(location.router, prefix="/api/location", tags=["location"])
+agri_app.include_router(websockets.router, prefix="/api/ws/telemetry", tags=["websockets"])
 
 @agri_app.on_event("startup")
 async def initial_boot_sequence():

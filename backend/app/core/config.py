@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     MQTT_BROKER_URL: str = os.getenv("MQTT_BROKER_URL", "localhost")
     MQTT_PORT: int = int(os.getenv("MQTT_PORT", 1883))
+    TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
 
     class Config:
         env_file = ".env"
