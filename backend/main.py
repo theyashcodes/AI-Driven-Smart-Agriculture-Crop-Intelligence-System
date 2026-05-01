@@ -54,10 +54,12 @@ agri_app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000", 
+        "http://localhost:3001",
         "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
         "https://ai-driven-smart-agriculture.vercel.app", # Add your specific Vercel URL here
     ],
-    allow_origin_regex="https://.*\.vercel\.app", # Allow all vercel preview deployments
+    allow_origin_regex=r"https://.*\.vercel\.app", # Allow all vercel preview deployments
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
