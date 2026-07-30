@@ -17,12 +17,17 @@ router = APIRouter()
 @router.post("/signup", response_model=schemas.UserResponse)
 @limiter.limit("5/minute")
 def register_new_account(request: Request, payload: schemas.UserCreate, db_session: Session = Depends(get_db)):
-    existing_record = db_session.query(models.User).filter(models.User.email == payload.email).first()
-    if existing_record:
+    existing_email = db_session.query(models.User).filter(models.User.email == payload.email).first()
+    if existing_email:
         raise HTTPException(status_code=400, detail="Account with this email already exists in the system")
+        
+    existing_username = db_session.query(models.User).filter(models.User.username == payload.username).first()
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Account with this username already exists in the system")
     
     hashed_secret = get_password_hash(payload.password)
-    fresh_user = models.User(username=payload.username, email=payload.email, hashed_password=hashed_secret)
+    # Automatically approve user to allow immediate login (bypassing admin approval)
+    fresh_user = models.User(username=payload.username, email=payload.email, hashed_password=hashed_secret, is_approved=True)
     db_session.add(fresh_user)
     db_session.commit()
     db_session.refresh(fresh_user)

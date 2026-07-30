@@ -12,7 +12,7 @@ class User(Base):
     hashed_password = Column(String)
     
     role = Column(String, default="farmer") # permissions scope
-    is_approved = Column(Boolean, default=False)
+    is_approved = Column(Boolean, default=True)
     subscription_tier = Column(String, default="free")
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
